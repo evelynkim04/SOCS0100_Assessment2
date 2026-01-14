@@ -46,5 +46,13 @@ head(mostwatched_data)
 
 # Deleting the first row
 mostwatched_data <- mostwatched_data[-1, ]
+
+# Deleting the repeated second value in columns "hours" and "views"
+mostwatched_data$views <- sub("\\s.*", "", mostwatched_data$views)
+mostwatched_data$hours <- sub("\\s.*", "", mostwatched_data$hours)
+
 head(mostwatched_data)
+
+# Creating "mostwatched_data" CSV for shiny app
+write.csv(mostwatched_data, "mostwatched_data.csv", row.names = FALSE)
 
