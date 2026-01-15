@@ -1,51 +1,88 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    https://shiny.posit.co/
-#
+# Packages
+# =========================
+if (!require(shiny)) install.packages("shiny")
+if (!require(ggplot2)) install.packages("ggplot2")
+if (!require(dplyr)) install.packages("dplyr")
+if (!require(shinydashboard)) install.packages("shinydashboard")
 
 library(shiny)
+library(ggplot2)
+library(dplyr)
+library(shinydashboard)
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
+# Read the data as CSV & cleaning data
+df <- read.csv("mostwatched_data.csv")
 
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
+df <- df %>%
+  mutate(
+    views = as.numeric(gsub(",", "", sub("\\s.*", "", views))),
+    hours = as.numeric(gsub(",", "", sub("\\s.*", "", hours))),
+    rank = as.numeric(rank)
+  )
 
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
+# UI
+ui <- dashboardPage(
+  
+  dashboardHeader(title = "UK Most Watched"),
+  
+  dashboardSidebar(
+    selectInput(
+      "variable",
+      "Views/hours",
+      choices = c("views", "hours"),
+      selected = "views"
+    ),
+    
+    sliderInput(
+      "top_n",
+      "Number of titles",
+      min = 5,
+      max = 50,
+      value = 10,
+      step = 5
     )
+  ),
+  
+  dashboardBody(
+    box(
+      width = 12,
+      plotOutput("bar_plot", height = 400)
+    )
+  )
 )
 
-# Define server logic required to draw a histogram
+# Server
 server <- function(input, output) {
-
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
+  
+  output$bar_plot <- renderPlot({
+    
+    variable <- switch(input$variable,
+                       "views" = "views",
+                       "hours" = "hours")
+    
+    fill_colour <- switch(input$variable,
+                          "views" = "steelblue",
+                          "hours" = "darkorange")
+    
+    df %>%
+      arrange(rank) %>%
+      slice_head(n = input$top_n) %>%
+      ggplot(aes(
+        x = reorder(title, .data[[variable]]),
+        y = .data[[variable]]
+      )) +
+      geom_col(fill = fill_colour) +
+      coord_flip() +
+      scale_y_continuous(labels = scales::comma) +
+      labs(
+        x = "Movie / TV show Title",
+        y = input$variable,
+        title = paste("Top", input$top_n, "Most Watched Titles (UK)"),
+        subtitle = paste("Metric:", input$variable)
+      ) +
+      theme_minimal()
+  })
 }
 
-# Run the application 
-shinyApp(ui = ui, server = server)
+# Running the app
+shinyApp(ui, server)
