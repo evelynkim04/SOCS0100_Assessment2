@@ -47,8 +47,14 @@ ui <- dashboardPage(
     box(
       width = 12,
       plotOutput("bar_plot", height = 400)
-    )
+    ),
+    
+    # scatter plot
+    box(
+      width = 12,
+      plotOutput("scatter_plot", height = 400)
   )
+)
 )
 
 # Server
@@ -79,6 +85,26 @@ server <- function(input, output) {
         y = input$variable,
         title = paste("Top", input$top_n, "Most Watched Titles (UK)"),
         subtitle = paste("Metric:", input$variable)
+      ) +
+      theme_minimal()
+  })
+  
+  # scatter plot
+  output$scatter_plot <- renderPlot({
+    
+    df %>%
+      ggplot(aes(
+        x = runtime,
+        y = .data[[input$variable]]
+      )) +
+      geom_point(alpha = 0.7, color = "steelblue") +
+      geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+      scale_y_continuous(labels = scales::comma) +
+      labs(
+        x = "runtime",
+        y = input$variable,
+        title = paste("Runtime vs", input$variable),
+        subtitle = "Each point represents a title"
       ) +
       theme_minimal()
   })
