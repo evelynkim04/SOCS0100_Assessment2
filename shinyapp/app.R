@@ -44,7 +44,8 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(
-    box(
+   # bar chart
+     box(
       width = 12,
       plotOutput("bar_plot", height = 400)
     ),
@@ -53,13 +54,20 @@ ui <- dashboardPage(
     box(
       width = 12,
       plotOutput("scatter_plot", height = 400)
+    ),
+    
+    # pie chart
+    box(
+      width = 12,
+      plotOutput("pie_plot", height = 400)
+    )
   )
-)
 )
 
 # Server
 server <- function(input, output) {
   
+  # bar chart
   output$bar_plot <- renderPlot({
     
     variable <- switch(input$variable,
@@ -107,6 +115,25 @@ server <- function(input, output) {
         subtitle = "Each point represents a title"
       ) +
       theme_minimal()
+  })
+  
+  # pie chart
+  output$pie_plot <- renderPlot({
+    
+    pie_data <- df %>%
+      group_by(genre) %>%
+      summarise(total = sum(.data[[input$variable]], na.rm = TRUE))
+    
+    ggplot(pie_data, aes(x = "", y = total, fill = genre)) +
+      geom_col(width = 1) +
+      coord_polar("y") +
+      scale_y_continuous(labels = scales::comma) +
+      labs(
+        title = paste("Share of", input$variable, "by Type"),
+        subtitle = "Movies vs TV Shows",
+        fill = "genre"
+      ) +
+      theme_void()
   })
 }
 
