@@ -4,11 +4,14 @@ if (!require(shiny)) install.packages("shiny")
 if (!require(ggplot2)) install.packages("ggplot2")
 if (!require(dplyr)) install.packages("dplyr")
 if (!require(shinydashboard)) install.packages("shinydashboard")
+if (!require(scales)) install.packages("scales")
+
 
 library(shiny)
 library(ggplot2)
 library(dplyr)
 library(shinydashboard)
+library(scales)
 
 # Read the data as CSV & cleaning data
 df <- read.csv("mostwatched_data.csv")
@@ -40,6 +43,13 @@ ui <- dashboardPage(
       max = 50,
       value = 10,
       step = 5
+    ),
+    
+    selectInput(
+      "type_filter",
+      "Filter by content type",
+      choices = c("All", "Movie", "TV Show"),
+      selected = "All"
     )
   ),
   
@@ -56,13 +66,14 @@ ui <- dashboardPage(
       plotOutput("scatter_plot", height = 400)
     ),
     
-    # pie chart
+    # donut plot
     box(
       width = 12,
-      plotOutput("pie_plot", height = 400)
+      plotOutput("donut_plot", height = 400)
+    )
     )
   )
-)
+
 
 # Server
 server <- function(input, output) {
@@ -117,24 +128,32 @@ server <- function(input, output) {
       theme_minimal()
   })
   
-  # pie chart
-  output$pie_plot <- renderPlot({
+  # donut plot
+  output$donut_plot <- renderPlot({
     
-    pie_data <- df %>%
-      group_by(genre) %>%
-      summarise(total = sum(.data[[input$variable]], na.rm = TRUE))
+    df_filtered <- df
     
-    ggplot(pie_data, aes(x = "", y = total, fill = genre)) +
-      geom_col(width = 1) +
-      coord_polar("y") +
-      scale_y_continuous(labels = scales::comma) +
+    if (input$type_filter != "All") {
+      df_filtered <- df %>%
+        filter(type == input$type_filter)
+    }
+    
+    df_genre <- df_filtered %>%
+      count(genre) %>%
+      mutate(prop = n / sum(n),
+             label = paste0(genre, " (", scales::percent(prop), ")"))
+    
+    ggplot(df_genre, aes(x = 2, y = n, fill = genre)) +
+      geom_col(width = 1, color = "white") +
+      coord_polar(theta = "y") +
+      xlim(0.5, 2.5) +
+      theme_void() +
       labs(
-        title = paste("Share of", input$variable, "by Type"),
-        subtitle = "Movies vs TV Shows",
-        fill = "genre"
-      ) +
-      theme_void()
+        title = "Genre Composition of Most Watched Titles (UK)",
+        subtitle = paste("Content type:", input$type_filter)
+      )
   })
+  
 }
 
 # Running the app
