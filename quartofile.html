@@ -98,15 +98,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="quarto" class="level2">
-<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
-<p>Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <a href="https://quarto.org" class="uri">https://quarto.org</a>.</p>
+<section id="part-i-a" class="level2">
+<h2 class="anchored" data-anchor-id="part-i-a">Part I-A</h2>
+<p>This assessment utilized static web-scraping in R to comprehensively gather data from FlixPatrol, which is a platform that collects streaming data about movies and TV shows (Eu-startups, 2026). The data that was scraped was the “Most Watched Movies and TV Shows from the United Kingdom in 2025 (January - June)”, in order to understand cultural trends in the UK, media consumption patterns, and genre popularity.</p>
+<p>The data was collected first by loading required packages as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, <span class="co"># tidyverse packages including purrr</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               purrr, <span class="co"># automating </span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               xml2, <span class="co"># parsing XML</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>               rvest, <span class="co"># parsing HTML</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>               robotstxt) <span class="co">#checking path is permitted </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>However, before being able to scrape the data, the code below allowed to check whether this website was scrapable or not. Only once the code confirmed that the data could be scraped was the data collected and converted into a table called “table.df”.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Checking if path is permitted </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">paths_allowed</span>(<span class="at">paths=</span><span class="st">"https://flixpatrol.com/most-watched/2025-1/titles-from-united-kingdom/"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">"https://flixpatrol.com/most-watched/2025-1/titles-from-united-kingdom/"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>parsed <span class="ot">&lt;-</span> <span class="fu">read_html</span>(url) <span class="co"># This reads the HTML content of the page. </span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>parsed.sub <span class="ot">&lt;-</span> <span class="fu">html_element</span>(parsed, <span class="at">xpath =</span> <span class="st">'/html/body/div[4]/div[1]'</span>) <span class="co"># This extracts the specific xpath of the table containing the wanted most-watched data. </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 9
+     `` title                   type  premiere genre country hours runtime views
+  &lt;dbl&gt; &lt;chr&gt;                   &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;
+1    NA ""                      All … All2026… AllA… "AllAr… TV S… TV Sho… TV S…
+2     1 "Adolescence    season… TV S… 2025     Crime ""      555,… 3:50    144,…
+3     2 "Missing You    season… TV S… 2025     Crime ""      218,… 3:46    58,0…
+4     3 "A Deadly American Mar… Movie 2025     Docu… ""      55,5… 1:43    32,3…
+5     4 "Black Mirror    seaso… TV S… 2011     Scie… ""      188,… 6:11    30,5…
+6     5 "Dept. Q    season 1"   TV S… 2025     Crime ""      210,… 8:16    25,4…</code></pre>
+</div>
+</div>
 </section>
 <section id="running-code" class="level2">
 <h2 class="anchored" data-anchor-id="running-code">Running Code</h2>
 <p>When you click the <strong>Render</strong> button a document will be generated that includes both content and the output of embedded code. You can embed code like this:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2</code></pre>
 </div>

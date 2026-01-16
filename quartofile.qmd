@@ -4,9 +4,46 @@ format: html
 editor: visual
 ---
 
-## Quarto
+## Part I-A
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+This assessment utilized static web-scraping in R to comprehensively gather data from FlixPatrol, which is a platform that collects streaming data about movies and TV shows (Eu-startups, 2026). The data that was scraped was the "Most Watched Movies and TV Shows from the United Kingdom in 2025 (January - June)", in order to understand cultural trends in the UK, media consumption patterns, and genre popularity.
+
+The data was collected first by loading required packages as follows:
+
+```{r}
+# Setup
+pacman::p_load(tidyverse, # tidyverse packages including purrr
+               purrr, # automating 
+               xml2, # parsing XML
+               rvest, # parsing HTML
+               robotstxt) #checking path is permitted 
+```
+
+However, before being able to scrape the data, the code below allowed to check whether this website was scrapable or not. Only once the code confirmed that the data could be scraped was the data collected and converted into a table called "table.df".
+
+```{r}
+#| echo: true
+#| results: false
+#| message: false
+#| warning: false
+# Checking if path is permitted 
+paths_allowed(paths="https://flixpatrol.com/most-watched/2025-1/titles-from-united-kingdom/")
+
+url <- "https://flixpatrol.com/most-watched/2025-1/titles-from-united-kingdom/"
+parsed <- read_html(url) # This reads the HTML content of the page. 
+parsed.sub <- html_element(parsed, xpath = '/html/body/div[4]/div[1]') # This extracts the specific xpath of the table containing the wanted most-watched data. 
+```
+
+```{r}
+#| label: scraped-data
+#| fig-cap: "mostwatched_data CSV turned into a table" 
+#| echo: false
+#| message: false
+#| warning: false
+# Converting the data into a table
+table.df <- html_table(parsed.sub) # This converts the extracted HTML table into an R dataframe.   
+head(table.df)
+```
 
 ## Running Code
 
