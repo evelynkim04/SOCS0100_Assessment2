@@ -1,5 +1,4 @@
-# Packages
-# =========================
+# Installing and loading packages
 if (!require(shiny)) install.packages("shiny")
 if (!require(ggplot2)) install.packages("ggplot2")
 if (!require(dplyr)) install.packages("dplyr")
@@ -12,7 +11,7 @@ library(dplyr)
 library(shinydashboard)
 library(scales)
 
-# Read the data as CSV & cleaning data
+# Reading the "mostwatched_data" data as CSV & cleaning the data
 df <- read.csv("mostwatched_data.csv")
 
 df <- df %>%
@@ -37,7 +36,8 @@ ui <- dashboardPage(
   
   dashboardBody(
     tabItems(
-      # Bar chart tab
+     
+       # Bar chart tab
       tabItem(tabName = "bar_tab",
               box(
                 width = 4,
