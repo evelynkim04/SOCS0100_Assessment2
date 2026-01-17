@@ -99,6 +99,8 @@ mostwatched_data$hours <- sub("\\s.*", "", mostwatched_data$hours)
 The following table was obtained after all data wrangling and cleaning process:
 
 ```{r}
+#| label: fig-table
+#| fig-cap: "Top Most Watched Titles (UK) Cleaned Table"
 #| echo: false
 #| message: false
 #| warning: false
@@ -109,8 +111,111 @@ head(mostwatched_data, 5) |>
   kable_styling(full_width = FALSE, position = "center")
 ```
 
-The table above illustrates the rank, title, the date the movie/TV shows were premiered, genre, hours streamed, the length of the content, and the number of views. Media, especially those provided by the abundantly used Netflix platform, is easily accessible for most people. Today media not only shapes our perspectives and beliefs, but also mirrors societal preferences and culture. The genre of media and streaming preferences influences our knowledge and way of thinking, thus potentially influencing social behaviour. As a result, investigating streaming trends and patterns in social science is vital in order to understand individuals and culture, as it mirrors ourselves.
+@fig-table illustrates the rank, title, the date the movie/TV shows were premiered, genre, hours streamed, the length of the content, and the number of views. Media, especially those provided by the abundantly used Netflix platform, is easily accessible for most people. Today media not only shapes our perspectives and beliefs, but also mirrors societal preferences and culture. The genre of media and streaming preferences influences our knowledge and way of thinking, thus potentially influencing social behaviour. As a result, investigating streaming trends and patterns in social science is vital in order to understand individuals and culture, as it mirrors ourselves.
 
 ## Part II-A
 
-In this second section, the refined dataset was used to produce 3 interactive visualisations dashboard on a Shiny app.
+In this second section, the refined dataset was used to produce 3 interactive visualisations dashboard on a Shiny app. The first visualisation method chosen was an bar chart showcasing the relationship between movie/TV show and the number of views/hours.
+
+```{r}
+#| echo: false
+#| results: false
+#| message: false
+#| warning: false
+# Creating "mostwatched_data" CSV for shiny app
+write.csv(mostwatched_data, "mostwatched_data.csv", row.names = FALSE) # Exporting the cleaned "mostwatched_data" dataset as CSV for use in Shiny app
+```
+
+```{r}
+#| label: fig-bar-chart-views
+#| fig-cap: "Top Most Watched Titles (UK) by number of views"
+#| echo: false
+#| message: false
+#| warning: false
+
+library(ggplot2)
+library(dplyr)
+library(scales)
+
+df <- read.csv("mostwatched_data.csv")
+
+df <- df %>%
+  mutate(
+    views = as.numeric(gsub(",", "", sub("\\s.*", "", views))),
+    hours = as.numeric(gsub(",", "", sub("\\s.*", "", hours))),
+    rank = as.numeric(rank)
+  )
+
+# Choose what you want to show
+variable <- "views"     
+top_n <- 10              # number of titles
+
+fill_colour <- ifelse(variable == "views", "steelblue", "darkorange")
+
+df %>%
+  arrange(rank) %>%
+  slice_head(n = top_n) %>%
+  ggplot(aes(
+    x = reorder(title, .data[[variable]]),
+    y = .data[[variable]]
+  )) +
+  geom_col(fill = fill_colour) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x = "Movie / TV show Title",
+    y = variable,
+    title = paste("Top", top_n, "Most Watched Titles (UK)"),
+    subtitle = paste("Metric:", variable)
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: fig-bar-chart-hours
+#| fig-cap: "Top Most Watched Titles (UK) by hours watched"
+#| echo: false
+#| message: false
+#| warning: false
+
+library(ggplot2)
+library(dplyr)
+library(scales)
+
+df <- read.csv("mostwatched_data.csv")
+
+df <- df %>%
+  mutate(
+    views = as.numeric(gsub(",", "", sub("\\s.*", "", views))),
+    hours = as.numeric(gsub(",", "", sub("\\s.*", "", hours))),
+    rank = as.numeric(rank)
+  )
+
+# Choose what you want to show
+variable <- "hours"     
+top_n <- 10              # number of titles
+
+fill_colour <- ifelse(variable == "views", "steelblue", "darkorange")
+
+df %>%
+  arrange(rank) %>%
+  slice_head(n = top_n) %>%
+  ggplot(aes(
+    x = reorder(title, .data[[variable]]),
+    y = .data[[variable]]
+  )) +
+  geom_col(fill = fill_colour) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x = "Movie / TV show Title",
+    y = variable,
+    title = paste("Top", top_n, "Most Watched Titles (UK)"),
+    subtitle = paste("Metric:", variable)
+  ) +
+  theme_minimal()
+```
+
+@fig-bar-chart-hours and @fig-bar-chart-views clearly presents the most popular titles in the UK by rank. These two bar charts gives us insight into patterns of media consumption. For instance, the TV show "Dept. Q" has a relatively low number of views compared to the show "Missing You", which ranks second in number of views. However, "Dept. Q" has a very similar number of hours watched as "Missing You". This reflects patterns of social consumption, also known as "binge-watching". In other words, some viewers in the UK enjoy to binge-watch media. While a low number of views may suggest low popularity at first glance, the number of hours watched indicates strong audience engagement.
+
+However, the analysis done above can be applied to only certain titles. The general trend that data is showing is that titles with high number of views usually also have high number of hours watched as well. In summary, the bar charts informs us on popularity.
