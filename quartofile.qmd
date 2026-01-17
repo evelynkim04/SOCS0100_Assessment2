@@ -303,3 +303,43 @@ df %>%
 ```
 
 @fig-scatter-runtime-hours and @fig-scatter-runtime-views have a more or less constant trendline, with the exception of one outlier at 3h50. This suggests that media length is likely not a factor to affect media consumption for both movies and TV shows, which may mean consumer engagement is determined more by the quality or content of the media.
+
+Finally, a donut chart displayed the genre composition of the most-watched titles. This visualisation demonstrates which genres dominate the media industry in the UK.
+
+```{r}
+#| label: fig-donut-tv
+#| fig-cap: "TV Shows Only"
+#| echo: false
+
+df_genre <- df %>%
+filter(type == "TV Show") %>%
+count(genre) %>%
+mutate(prop = n / sum(n))
+
+ggplot(df_genre, aes(x = 2, y = n, fill = genre)) +
+geom_col(width = 1, color = "white") +
+coord_polar(theta = "y") +
+xlim(0.5, 2.5) +
+theme_void() +
+labs(title = "TV Shows Only")
+```
+
+```{r}
+#| label: fig-donut-movies
+#| fig-cap: "Movies Only"
+#| echo: false
+
+df_genre <- df %>%
+filter(type == "Movie") %>%
+count(genre) %>%
+mutate(prop = n / sum(n))
+
+ggplot(df_genre, aes(x = 2, y = n, fill = genre)) +
+geom_col(width = 1, color = "white") +
+coord_polar(theta = "y") +
+xlim(0.5, 2.5) +
+theme_void() +
+labs(title = "Movies Only")
+```
+
+@fig-donut-tv and @fig-donut-movies informs us that animation is the most popular genre for both movies and TV shows. However, it is interesting to see that animation is more popular in the form of a TV show than a movie, which tells us that consumers prefer animation in serialized format, rather than long-lengthed movies.
