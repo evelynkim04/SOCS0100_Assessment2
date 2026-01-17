@@ -219,3 +219,87 @@ df %>%
 @fig-bar-chart-hours and @fig-bar-chart-views clearly presents the most popular titles in the UK by rank. These two bar charts gives us insight into patterns of media consumption. For instance, the TV show "Dept. Q" has a relatively low number of views compared to the show "Missing You", which ranks second in number of views. However, "Dept. Q" has a very similar number of hours watched as "Missing You". This reflects patterns of social consumption, also known as "binge-watching". In other words, some viewers in the UK enjoy to binge-watch media. While a low number of views may suggest low popularity at first glance, the number of hours watched indicates strong audience engagement.
 
 However, the analysis done above can be applied to only certain titles. The general trend that data is showing is that titles with high number of views usually also have high number of hours watched as well. In summary, the bar charts informs us on popularity.
+
+The second data visualisation method used a scatter plot to illustrate the relationship between runtime and views and runtime with hours watched.
+
+```{r}
+#| label: fig-scatter-runtime-views
+#| fig-cap: "Runtime vs Views for Most Watched UK Titles"
+#| echo: false
+#| message: false
+#| warning: false
+
+library(ggplot2)
+library(dplyr)
+library(scales)
+
+df <- read.csv("mostwatched_data.csv")
+
+df <- df %>%
+  mutate(
+    views = as.numeric(gsub(",", "", sub("\\s.*", "", views))),
+    hours = as.numeric(gsub(",", "", sub("\\s.*", "", hours))),
+    rank = as.numeric(rank)
+  )
+
+# Choose what to plot
+scatter_variable <- "views"   
+
+df %>%
+  ggplot(aes(
+    x = runtime,
+    y = .data[[scatter_variable]]
+  )) +
+  geom_point(alpha = 0.7, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x = "Runtime",
+    y = scatter_variable,
+    title = paste("Runtime vs", scatter_variable),
+    subtitle = "Each point represents a title"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: fig-scatter-runtime-hours
+#| fig-cap: "Runtime vs Hours for Most Watched UK Titles"
+#| echo: false
+#| message: false
+#| warning: false
+
+library(ggplot2)
+library(dplyr)
+library(scales)
+
+df <- read.csv("mostwatched_data.csv")
+
+df <- df %>%
+  mutate(
+    views = as.numeric(gsub(",", "", sub("\\s.*", "", views))),
+    hours = as.numeric(gsub(",", "", sub("\\s.*", "", hours))),
+    rank = as.numeric(rank)
+  )
+
+# Choose what to plot
+scatter_variable <- "hours"   
+
+df %>%
+  ggplot(aes(
+    x = runtime,
+    y = .data[[scatter_variable]]
+  )) +
+  geom_point(alpha = 0.7, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x = "Runtime",
+    y = scatter_variable,
+    title = paste("Runtime vs", scatter_variable),
+    subtitle = "Each point represents a title"
+  ) +
+  theme_minimal()
+```
+
+@fig-scatter-runtime-hours and @fig-scatter-runtime-views have a more or less constant trendline, with the exception of one outlier at 3h50. This suggests that media length is likely not a factor to affect media consumption for both movies and TV shows, which may mean consumer engagement is determined more by the quality or content of the media.
