@@ -69,6 +69,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="quartofile_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="quartofile_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="quartofile_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="quartofile_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="quartofile_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
 
 </head>
@@ -110,7 +112,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>               rvest, <span class="co"># parsing HTML</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>               robotstxt) <span class="co">#checking path is permitted </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>However, before being able to scrape the data, the code below allowed to check whether this website was scrapable or not. Only once the code confirmed that the data could be scraped was the data collected and converted into a table called “table.df”.</p>
+<p>However, before being able to scrape the data, the code below allowed to check whether this website was scrapable or not. Only once the code confirmed that the data could be scraped was the data collected and converted into a table called “table.df”. A specific xpath of the table in the website was selected,</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Checking if path is permitted </span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">paths_allowed</span>(<span class="at">paths=</span><span class="st">"https://flixpatrol.com/most-watched/2025-1/titles-from-united-kingdom/"</span>)</span>
@@ -133,22 +135,94 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
-<section id="running-code" class="level2">
-<h2 class="anchored" data-anchor-id="running-code">Running Code</h2>
-<p>When you click the <strong>Render</strong> button a document will be generated that includes both content and the output of embedded code. You can embed code like this:</p>
+<section id="part-i-b" class="level2">
+<h2 class="anchored" data-anchor-id="part-i-b">Part I-B</h2>
+<p>In this section, data wrangling and cleaning was carried out. Any empty rows were removed, and all names were cleaned into snake_case using the janitor package. Furthermore, in the “hours” and “views” columns, data were written twice in each individual cell so data cleaning also involved making sure that one cell only contained one value.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 2</code></pre>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cleaning names</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(mostwatched_data) <span class="ot">&lt;-</span>  janitor<span class="sc">::</span><span class="fu">make_clean_names</span>(<span class="fu">names</span>(mostwatched_data)) <span class="co"># This cleans all names into snake_case. </span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Deleting empty rows</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>empt <span class="ot">&lt;-</span> <span class="fu">apply</span>(mostwatched_data, <span class="dv">1</span>, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">all</span>(<span class="fu">is.na</span>(x) <span class="sc">|</span> x <span class="sc">==</span> <span class="st">""</span>)) <span class="co"># Removing missing values or empty rows. </span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>mostwatched_data <span class="ot">&lt;-</span> mostwatched_data[<span class="fu">which</span>(<span class="sc">!</span>empt), ]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Deleting the repeated second value in columns "hours" and "views"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>mostwatched_data<span class="sc">$</span>views <span class="ot">&lt;-</span> <span class="fu">sub</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">s.*"</span>, <span class="st">""</span>, mostwatched_data<span class="sc">$</span>views) <span class="co"># Each cell in "hours" and "views" had the same information written twice. This line thus keeps only one number. </span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>mostwatched_data<span class="sc">$</span>hours <span class="ot">&lt;-</span> <span class="fu">sub</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">s.*"</span>, <span class="st">""</span>, mostwatched_data<span class="sc">$</span>hours)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<p>You can add options to executable code like this</p>
+<p>The following table was obtained after all data wrangling and cleaning process:</p>
 <div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 4</code></pre>
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Mostwatched TV shows/Movies UK</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">rank</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">title</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">type</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">premiere</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">genre</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">hours</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">runtime</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">views</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Adolescence season 1</td>
+<td style="text-align: left;">TV Show</td>
+<td style="text-align: left;">2025</td>
+<td style="text-align: left;">Crime</td>
+<td style="text-align: left;">555,100,000</td>
+<td style="text-align: left;">3:50</td>
+<td style="text-align: left;">144,800,000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Missing You season 1</td>
+<td style="text-align: left;">TV Show</td>
+<td style="text-align: left;">2025</td>
+<td style="text-align: left;">Crime</td>
+<td style="text-align: left;">218,600,000</td>
+<td style="text-align: left;">3:46</td>
+<td style="text-align: left;">58,000,000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">A Deadly American Marriage</td>
+<td style="text-align: left;">Movie</td>
+<td style="text-align: left;">2025</td>
+<td style="text-align: left;">Documentary</td>
+<td style="text-align: left;">55,500,000</td>
+<td style="text-align: left;">1:43</td>
+<td style="text-align: left;">32,300,000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Black Mirror season 7</td>
+<td style="text-align: left;">TV Show</td>
+<td style="text-align: left;">2011</td>
+<td style="text-align: left;">Science Fiction</td>
+<td style="text-align: left;">188,400,000</td>
+<td style="text-align: left;">6:11</td>
+<td style="text-align: left;">30,500,000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Dept. Q season 1</td>
+<td style="text-align: left;">TV Show</td>
+<td style="text-align: left;">2025</td>
+<td style="text-align: left;">Crime</td>
+<td style="text-align: left;">210,000,000</td>
+<td style="text-align: left;">8:16</td>
+<td style="text-align: left;">25,400,000</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<p>The <code>echo: false</code> option disables the printing of code (only output is displayed).</p>
+<p>The table above illustrates the rank, title, the date the movie/TV shows were premiered, genre, hours streamed, the length of the content, and the number of views. Media, especially those provided by the abundantly used Netflix platform, is easily accessible for most people. Today media not only shapes our perspectives and beliefs, but also mirrors societal preferences and culture. The genre of media and streaming preferences influences our knowledge and way of thinking, thus potentially influencing social behaviour. As a result, investigating streaming trends and patterns in social science is vital in order to understand individuals and culture, as it mirrors ourselves.</p>
 </section>
 
 </main>

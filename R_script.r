@@ -51,7 +51,11 @@ mostwatched_data <- mostwatched_data[-1, ] # Removing the first row since it's e
 mostwatched_data$views <- sub("\\s.*", "", mostwatched_data$views) # Each cell in "hours" and "views" had the same information written twice. This line thus keeps only one number. 
 mostwatched_data$hours <- sub("\\s.*", "", mostwatched_data$hours)
 
-head(mostwatched_data)
+# Final table
+library(kableExtra)
+head(mostwatched_data, 5) |>
+  kbl(caption = "Mostwatched TV/Movies UK", booktabs = TRUE) |>
+  kable_styling(full_width = FALSE, position = "center")
 
 # Creating "mostwatched_data" CSV for shiny app
 write.csv(mostwatched_data, "mostwatched_data.csv", row.names = FALSE) # Exporting the cleaned "mostwatched_data" dataset as CSV for use in Shiny app. 

@@ -19,7 +19,7 @@ pacman::p_load(tidyverse, # tidyverse packages including purrr
                robotstxt) #checking path is permitted 
 ```
 
-However, before being able to scrape the data, the code below allowed to check whether this website was scrapable or not. Only once the code confirmed that the data could be scraped was the data collected and converted into a table called "table.df".
+However, before being able to scrape the data, the code below allowed to check whether this website was scrapable or not. Only once the code confirmed that the data could be scraped was the data collected and converted into a table called "table.df". A specific xpath of the table in the website was selected,
 
 ```{r}
 #| echo: true
@@ -35,8 +35,6 @@ parsed.sub <- html_element(parsed, xpath = '/html/body/div[4]/div[1]') # This ex
 ```
 
 ```{r}
-#| label: scraped-data
-#| fig-cap: "mostwatched_data CSV turned into a table" 
 #| echo: false
 #| message: false
 #| warning: false
@@ -45,19 +43,70 @@ table.df <- html_table(parsed.sub) # This converts the extracted HTML table into
 head(table.df)
 ```
 
-## Running Code
+## Part I-B
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
-
-You can add options to executable code like this
+In this section, data wrangling and cleaning was carried out. Any empty rows were removed, and all names were cleaned into snake_case using the janitor package. Furthermore, in the "hours" and "views" columns, data were written twice in each individual cell so data cleaning also involved making sure that one cell only contained one value.
 
 ```{r}
 #| echo: false
-2 * 2
+#| results: false
+#| message: false
+#| warning: false
+# Rename the first column to "rank"
+names(table.df)[1] <- "rank"
+
+# Keeping all columns except "country" since it is all the UK
+mostwatched_data <- table.df %>% select("rank", "title", "type", "premiere", "genre", "hours", "runtime", "views") # Dropping the "country" column since all data is for the UK.
+head(mostwatched_data)
+
+# Tidying data
+library(janitor) # Loading the Janitor package.
+
+# Cleaning names
+names(mostwatched_data) <-  janitor::make_clean_names(names(mostwatched_data)) # This cleans all names into snake_case. 
+
+# Deleting empty rows
+empt <- apply(mostwatched_data, 1, FUN = function(x) all(is.na(x) | x == "")) # Removing missing values or empty rows. 
+mostwatched_data <- mostwatched_data[which(!empt), ] 
+
+head(mostwatched_data)
+
+# Deleting the first row
+mostwatched_data <- mostwatched_data[-1, ] # Removing the first row since it's empty. 
+
+# Deleting the repeated second value in columns "hours" and "views"
+mostwatched_data$views <- sub("\\s.*", "", mostwatched_data$views) # Each cell in "hours" and "views" had the same information written twice. This line thus keeps only one number. 
+mostwatched_data$hours <- sub("\\s.*", "", mostwatched_data$hours)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+#| echo: true
+#| results: false
+#| message: false
+#| warning: false
+# Cleaning names
+names(mostwatched_data) <-  janitor::make_clean_names(names(mostwatched_data)) # This cleans all names into snake_case. 
+
+# Deleting empty rows
+empt <- apply(mostwatched_data, 1, FUN = function(x) all(is.na(x) | x == "")) # Removing missing values or empty rows. 
+mostwatched_data <- mostwatched_data[which(!empt), ]
+
+# Deleting the repeated second value in columns "hours" and "views"
+mostwatched_data$views <- sub("\\s.*", "", mostwatched_data$views) # Each cell in "hours" and "views" had the same information written twice. This line thus keeps only one number. 
+mostwatched_data$hours <- sub("\\s.*", "", mostwatched_data$hours)
+```
+
+The following table was obtained after all data wrangling and cleaning process:
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# Final table
+library(kableExtra)
+head(mostwatched_data, 5) |>
+  kbl(caption = "Mostwatched TV shows/Movies UK", booktabs = TRUE) |>
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+The table above illustrates the rank, title, the date the movie/TV shows were premiered, genre, hours streamed, the length of the content, and the number of views. Media, especially those provided by the abundantly used Netflix platform, is easily accessible for most people. Today media not only shapes our perspectives and beliefs, but also mirrors societal preferences and culture. The genre of media and streaming preferences influences our knowledge and way of thinking, thus potentially influencing social behaviour. As a result, investigating streaming trends and patterns in social science is vital in order to understand individuals and culture, as it mirrors ourselves.
